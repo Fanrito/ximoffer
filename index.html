@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>厦信薪火项目 - 厦信院友公益就业帮扶计划</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 配置Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                        muted: '#86909C',
+                        live: '#F53F3F',
+                        upcoming: '#165DFF',
+                        ended: '#86909C'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow-sm {
+                text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(22, 93, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(22, 93, 255, 0.05) 1px, transparent 1px);
+            }
+            .tag {
+                @apply inline-block px-2 py-1 text-xs font-medium rounded-full;
+            }
+            .tag-live {
+                @apply bg-live/10 text-live;
+            }
+            .tag-upcoming {
+                @apply bg-upcoming/10 text-upcoming;
+            }
+            .tag-ended {
+                @apply bg-ended/10 text-ended;
+            }
+            .avatar-placeholder {
+                @apply w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary;
+            }
+            .avatar-circle {
+                @apply w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm;
+            }
+        }
+    </style>
+    <style>
+        /* 基础动画定义 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulseSoft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* 页面加载动画 */
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* 隐藏滚动条但保留功能 */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(22, 93, 255, 0.3);
+            border-radius: 2px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(22, 93, 255, 0.5);
+        }
+        
+        /* 直播中脉冲动画 */
+        @keyframes pulseLive {
+            0%, 100% { background-color: rgba(245, 63, 63, 0.1); color: #F53F3F; }
+            50% { background-color: rgba(245, 63, 63, 0.2); color: #E02020; }
+        }
+        .tag-live {
+            animation: pulseLive 1.5s infinite;
+        }
+        
+        /* 头像加载过渡效果 */
+        .avatar-circle {
+            transition: all 300ms ease-in-out;
+        }
+        .avatar-circle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-white text-dark min-h-screen flex flex-col bg-grid">
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100 transition-all duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-primary font-semibold text-lg tracking-tight">
+                        <i class="fa fa-fire mr-2"></i>厦信薪火
+                    </span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#about" class="text-muted hover:text-primary transition-all-300 text-sm font-medium">关于项目</a>
+                    <a href="#courses" class="text-muted hover:text-primary transition-all-300 text-sm font-medium">课程动态</a>
+                    <a href="#recruit" class="text-muted hover:text-primary transition-all-300 text-sm font-medium">讲师招募</a>
+                    <a href="#contact" class="text-muted hover:text-primary transition-all-300 text-sm font-medium">联系我们</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="menu-toggle" class="text-muted hover:text-primary transition-all-300">
+                        <i class="fa fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 animate-fadeIn">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#about" class="block px-3 py-2 text-muted hover:text-primary transition-all-300 text-sm font-medium">关于项目</a>
+                <a href="#courses" class="block px-3 py-2 text-muted hover:text-primary transition-all-300 text-sm font-medium">课程动态</a>
+                <a href="#recruit" class="block px-3 py-2 text-muted hover:text-primary transition-all-300 text-sm font-medium">讲师招募</a>
+                <a href="#contact" class="block px-3 py-2 text-muted hover:text-primary transition-all-300 text-sm font-medium">联系我们</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow pt-24 pb-16">
+        <!-- 英雄区 -->
+        <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+            <div class="max-w-3xl mx-auto text-center">
+                <div class="tag tag-upcoming mb-4 fade-in">厦信院友 · 公益项目</div>
+                <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-dark leading-tight mb-6 fade-in">
+                    厦信<span class="text-primary">薪火</span>
+                </h1>
+                <p class="text-muted text-lg md:text-xl mb-10 fade-in delay-100">
+                    经验点亮就业灯塔，厦信精神代代相传
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4 fade-in delay-200">
+                    <a href="#recruit" class="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-md transition-all-300 flex items-center justify-center">
+                        <i class="fa fa-user-plus mr-2"></i>加入讲师团
+                    </a>
+                    <a href="#courses" class="bg-light hover:bg-gray-200 text-dark font-medium px-6 py-3 rounded-md transition-all-300 flex items-center justify-center border border-gray-200">
+                        <i class="fa fa-calendar mr-2"></i>查看课程
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于项目 -->
+        <section id="about" class="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold mb-8 fade-in">关于<span class="text-primary">项目</span></h2>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 fade-in delay-100">
+                    <p class="text-muted mb-6 leading-relaxed">
+                        近年来就业环境日趋严峻，厦信学子的求职焦虑持续蔓延。2024届我院本科毕业生就业率为75.62%；而据牛客网数据，2025年全国秋招求职者0offer率已达43.2%。
+                    </p>
+                    <p class="text-muted mb-6 leading-relaxed">
+                        这份焦虑，我们曾感同身受；这条求职路，我们曾摸爬滚打。如今，愿以「厦信薪火」为名，召集有情怀的院友，用周末的碎片时间，为在校学弟妹点亮就业灯塔，让厦信精神代代相传。
+                    </p>
+                    <h3 class="text-lg font-semibold mb-3 text-dark">项目愿景</h3>
+                    <ul class="text-muted space-y-2 leading-relaxed mb-6">
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                            <span>公示鸣谢讲师名单，记录每一位的公益足迹</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                            <span>公开授课材料，沉淀厦信就业干货库</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                            <span>开通学员打赏通道，让真诚分享被看见、被认可</span>
+                        </li>
+                    </ul>
+                    <p class="text-muted leading-relaxed">
+                        本项目源自「厦信OFFER」就业交流QQ群，纯公益无报酬，旨在帮助在校院友提高就业竞争力、缓解就业焦虑，让厦信学子在求职路上不再孤单。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 课程动态 -->
+        <section id="courses" class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-light/50 rounded-3xl my-8">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold mb-12 text-center fade-in">课程<span class="text-primary">动态</span></h2>
+                <div class="grid grid-cols-1 gap-8">
+                    <!-- 第3课 -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 hover:shadow-md transition-all-300 fade-in delay-100 border-l-4 border-upcoming">
+                        <div class="flex justify-between items-start mb-6">
+                            <h3 class="text-xl font-semibold text-dark">1期班 第3课</h3>
+                            <span id="course2-tag" class="tag tag-upcoming">筹备中</span>
+                        </div>
+                        
+                        <!-- 课程基本信息 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">主题</h4>
+                                <p class="text-dark font-medium">筹备中，请联系召集人报名备课</p>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">时间</h4>
+                                <p class="text-dark">2025年12月xx日 xx:xx-xx:xx</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 讲师介绍 -->
+                        <div class="border-t border-gray-100 pt-6">
+                            <h4 class="text-sm font-medium text-muted mb-4">召集人介绍</h4>
+                            <div class="flex items-center">
+                                <!-- 圆形QQ头像 -->
+                                <img src="https://q.qlogo.cn/headimg_dl?dst_uin=2214106974&spec=640&img_type=jpg" 
+                                     alt="Fliz" 
+                                     class="avatar-circle mr-4"
+                                     loading="lazy">
+                                <div>
+                                    <div class="flex items-center mb-1">
+                                        <span class="text-dark font-medium mr-2">Fliz</span>
+                                        <a href="https://qm.qq.com/q/Xe1rtw8POU" target="_blank" class="text-primary text-sm hover:underline">
+                                            <i class="fa fa-qq mr-1"></i>添加好友
+                                        </a>
+                                    </div>
+                                    <p class="text-muted text-sm">24届本科生，转信交流群与厦信OFFER群建群人，现菊厂员工</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 第2课 -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 hover:shadow-md transition-all-300 fade-in delay-200">
+                        <div class="flex justify-between items-start mb-6">
+                            <h3 class="text-xl font-semibold text-dark">1期班 第2课</h3>
+                            <span id="course2-tag" class="tag tag-ended">已结束</span>
+                        </div>
+                        
+                        <!-- 课程基本信息 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">主题</h4>
+                                <p class="text-dark font-medium">成为AI/云原生Infra工程师：我的理解与成长路径</p>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">时间</h4>
+                                <p class="text-dark">2025年11月29日 21:00-23:00</p>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">课程链接</h4>
+                                <a href="https://meeting.tencent.com/p/8360063578" target="_blank" class="inline-flex items-center text-primary hover:text-primary/80 transition-all-300">
+                                    <i class="fa fa-link mr-2"></i>腾讯会议：836-006-3578
+                                </a>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">课程回放</h4>
+                                <a href="https://meeting.tencent.com/crm/KnVg06x74f" target="_blank" class="inline-flex items-center text-primary hover:text-primary/80 transition-all-300">
+                                    <i class="fa fa-play-circle mr-2"></i>查看录制文件
+                                </a>
+                            </div>
+                            <div class="border-t border-gray-100 pt-6">
+                                <h4 class="text-sm font-medium text-muted mb-4">课程资料</h4>
+                                <div class="space-y-3">
+                                    <a href="https://ai.feishu.cn/wiki/H3t2wrK6xiI59JkAsdEcG7QKnJg" class="resource-link flex items-center" target="_blank">
+                                        <i class="fa fa-file-word-o text-primary mt-1 mr-3 text-lg"></i>
+                                        <div>
+                                            <p class="text-dark font-medium text-sm">课程文字稿</p>
+                                            <p class="text-muted text-xs mt-1">讲课前可在QA区留言</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 讲师介绍 -->
+                        <div class="border-t border-gray-100 pt-6">
+                            <h4 class="text-sm font-medium text-muted mb-4">讲师介绍</h4>
+                            <div class="flex items-center">
+                                <!-- 东方の曼倩的圆形QQ头像 -->
+                                <img src="https://q.qlogo.cn/headimg_dl?dst_uin=1940290745&spec=640&img_type=jpg" 
+                                     alt="东方の曼倩" 
+                                     class="avatar-circle mr-4"
+                                     loading="lazy">
+                                <div>
+                                    <div class="flex items-center mb-1">
+                                        <span class="text-dark font-medium mr-2">东方の曼倩</span>
+                                        <a href="https://qm.qq.com/q/QtQkaiwQ4q" target="_blank" class="text-primary text-sm hover:underline">
+                                            <i class="fa fa-qq mr-1"></i>添加好友
+                                        </a>
+                                    </div>
+                                    <p class="text-muted text-sm">23届本科生，前AI四小龙云原生Infra工程师，现开源社区AI Infra工程师</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第1课（已结束） -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 hover:shadow-md transition-all-300 fade-in delay-200">
+                        <div class="flex justify-between items-start mb-6">
+                            <h3 class="text-xl font-semibold text-dark">1期班 第1课</h3>
+                            <span class="tag tag-ended">已结束</span>
+                        </div>
+                        
+                        <!-- 课程基本信息 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">主题</h4>
+                                <p class="text-dark font-medium">简历优化与实习投递策略</p>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">时间</h4>
+                                <p class="text-dark">2025年11月22日 14:00-16:00</p>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">课程链接</h4>
+                                <a href="https://meeting.tencent.com/p/8360063578" target="_blank" class="inline-flex items-center text-primary hover:text-primary/80 transition-all-300">
+                                    <i class="fa fa-link mr-2"></i>腾讯会议：836-006-3578
+                                </a>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-muted mb-2">课程回放</h4>
+                                <a href="https://meeting.tencent.com/crm/l6MweQj92b" target="_blank" class="inline-flex items-center text-primary hover:text-primary/80 transition-all-300">
+                                    <i class="fa fa-play-circle mr-2"></i>查看录制文件
+                                </a>
+                            </div>
+                            <div class="border-t border-gray-100 pt-6">
+                                <h4 class="text-sm font-medium text-muted mb-4">课程资料</h4>
+                                <div class="space-y-3">
+                                    <a href="https://lcngjgx3dgxy.feishu.cn/wiki/HENYwQapFiU9vzkbm0Cc7MfCndd" class="resource-link flex items-center" target="_blank">
+                                        <i class="fa fa-file-word-o text-primary mt-1 mr-3 text-lg"></i>
+                                        <div>
+                                            <p class="text-dark font-medium text-sm">课程中提及的资料</p>
+                                            <p class="text-muted text-xs mt-1">包括技术网站、求职软件、简历网站</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 讲师介绍 -->
+                        <div class="border-t border-gray-100 pt-6">
+                            <h4 class="text-sm font-medium text-muted mb-4">讲师介绍</h4>
+                            <div class="flex items-center">
+                                <!-- 念旧的圆形QQ头像 -->
+                                <img src="https://q.qlogo.cn/headimg_dl?dst_uin=3235467914&spec=640&img_type=jpg" 
+                                     alt="念旧" 
+                                     class="avatar-circle mr-4"
+                                     loading="lazy">
+                                <div>
+                                    <div class="flex items-center mb-1">
+                                        <span class="text-dark font-medium mr-2">念旧</span>
+                                        <a href="https://qm.qq.com/q/2ZFhArgrJS" target="_blank" class="text-primary text-sm hover:underline">
+                                            <i class="fa fa-qq mr-1"></i>添加好友
+                                        </a>
+                                    </div>
+                                    <p class="text-muted text-sm">27届本科生，收获网易、京东研发岗offer，自大二起拥有多段实习经历</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 讲师招募 -->
+        <section id="recruit" class="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold mb-8 fade-in">讲师<span class="text-primary">招募</span></h2>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 fade-in delay-100 mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-dark">招募对象</h3>
+                    <ul class="text-muted space-y-3 leading-relaxed mb-8">
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-primary mt-1 mr-3"></i>
+                            <span>有实习经验的厦信在校本研学生/院友</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-primary mt-1 mr-3"></i>
+                            <span>互联网及相关行业 软件开发岗从业者院友</span>
+                        </li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold mb-4 text-dark">常设课程</h3>
+                    <p class="text-muted mb-3 leading-relaxed">覆盖求职全流程，每节课含「理论+经验分享+现场答疑」三大环节：</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+                        <div class="bg-light p-3 rounded-lg text-muted">简历优化</div>
+                        <div class="bg-light p-3 rounded-lg text-muted">投递策略</div>
+                        <div class="bg-light p-3 rounded-lg text-muted">技术面技巧</div>
+                        <div class="bg-light p-3 rounded-lg text-muted">主管面沟通</div>
+                        <div class="bg-light p-3 rounded-lg text-muted">谈薪避坑</div>
+                        <div class="bg-light p-3 rounded-lg text-muted">技术项目准备</div>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-4 text-dark">开班详情</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                        <div class="flex items-start">
+                            <i class="fa fa-clock-o text-primary mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="text-sm font-medium text-dark mb-1">时间</h4>
+                                <p class="text-muted text-sm">周六/周日 碎片时间2小时</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fa fa-video-camera text-primary mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="text-sm font-medium text-dark mb-1">形式</h4>
+                                <p class="text-muted text-sm">在线会议，循环滚动开班</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fa fa-sliders text-primary mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="text-sm font-medium text-dark mb-1">灵活度</h4>
+                                <p class="text-muted text-sm">授课数量、时长无强制要求，完全自愿</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fa fa-cogs text-primary mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="text-sm font-medium text-dark mb-1">运营模式</h4>
+                                <p class="text-muted text-sm">原子化授课，自愿认领课题，群内沟通调整</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                        <p class="text-dark font-medium mb-2">如果你愿意为学院发展添一份力，用自己的经验为学弟妹铺路，欢迎加入我们！</p>
+                        <p class="text-muted text-sm">纯公益无报酬，但你的每一份付出都会被记录、被感谢～</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系我们 -->
+        <section id="contact" class="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold mb-8 fade-in">联系<span class="text-primary">我们</span></h2>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 fade-in delay-100">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="flex flex-col items-center text-center p-4 bg-light rounded-lg">
+                            <div class="text-primary text-2xl mb-3">
+                                <i class="fa fa-user"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold mb-2">召集人</h3>
+                            <p class="text-muted text-sm mb-2">24届院友 王宇翔</p>
+                            <a href="https://qm.qq.com/q/Xe1rtw8POU" target="_blank" class="text-primary text-sm hover:underline">
+                                <i class="fa fa-qq mr-1"></i>2214106974
+                            </a>
+                        </div>
+                        <div class="flex flex-col items-center text-center p-4 bg-light rounded-lg">
+                            <div class="text-primary text-2xl mb-3">
+                                <i class="fa fa-users"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold mb-2">项目讲课群</h3>
+                            <p class="text-muted text-sm mb-2">厦信薪火</p>
+                            <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=H6JSV9lxKw%2F9Hny4IBfZDela31S6UTmLyMKqtoO4LDJ5EpLOWmiOvWlMcPYcbBxZ&busi_data=eyJncm91cENvZGUiOiI1NzIzNDkwNTciLCJ0b2tlbiI6InYxZnhtQXNuT29wTHFPY2thbWRraTBLY0Q0S05tQW5LNUZPcHNVOWlzNDRCVXo5VkdMeGRPZ1orWUJDeXhLVzEiLCJ1aW4iOiIyMjE0MTA2OTc0In0%3D&data=ezTK4CthWmA6Z7vnvno0qIAD4rF6l4UcaI1sYGWTDW-QVHN2gSN6IVgCVKSny1EFTdqwBZypZfPVqq9Obm7Gag&svctype=4&tempid=h5_group_info" target="_blank" class="text-primary text-sm hover:underline">
+                                <i class="fa fa-qq mr-1"></i>572349057
+                            </a>
+                        </div>
+                        <div class="flex flex-col items-center text-center p-4 bg-light rounded-lg">
+                            <div class="text-primary text-2xl mb-3">
+                                <i class="fa fa-comments"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold mb-2">就业交流群</h3>
+                            <p class="text-muted text-sm mb-2">厦信OFFER</p>
+                            <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=n2MppXXQxVp0Jm2yLItqy7QfRXsCkK9JHyi2YS2RcfAAyHSFSGuAOlQoPNsUhBff&busi_data=eyJncm91cENvZGUiOiIxMDExMDkwMjE0IiwidG9rZW4iOiI0QkxZOW95bVVmaFhaVFl0SzBtQ05CanVTV0NVMElNS1RrYkd4QS9hV043MkJjbmczZ2JlVUIvYXhXZ29oKzhlIiwidWluIjoiMjIxNDEwNjk3NCJ9&data=406x3YaIeh1knEeUPrkHE4uwOFJ1A7jNPOEEXZ8NvhlJ0OpJOa_naLPI1PoIp4Yy1-gxrO-HpRLnJ3VW8utBsg&svctype=4&tempid=h5_group_info" target="_blank" class="text-primary text-sm hover:underline">
+                                <i class="fa fa-qq mr-1"></i>1011090214
+                            </a>
+                        </div>
+                    </div>
+                    <div class="text-center text-muted text-sm">
+                        <p>课程链接及后续安排将在QQ群内发布，欢迎邀请有需要的同学一同加入～</p>
+                        <p class="mt-2">让经验流动，让努力更有方向</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <span class="text-primary font-semibold">厦信薪火项目</span>
+                    <p class="text-gray-400 text-xs mt-1">© 2025 版权所有 · 纯公益就业帮扶计划</p>
+                </div>
+            </div>
+            <!-- 备案号预留位置 -->
+            <div class="mt-6 text-center text-gray-500 text-xs">
+                <a href="https://beian.miit.gov.cn/" target="_blank" class="hover:text-gray-400 transition-all-300">
+                    闽ICP备2025119238号-2
+                </a>
+                <span class="mx-2">|</span>
+                <a href="https://beian.mps.gov.cn/#/query/webSearch?code=35040002000247" target="_blank" class="hover:text-gray-400 transition-all-300">
+                    闽公网安备35040002000247号
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 bg-primary/80 hover:bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-all-300 opacity-0 invisible">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 点击移动端菜单项后关闭菜单
+        const mobileMenuItems = mobileMenu.querySelectorAll('a');
+        mobileMenuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+        
+        // 导航栏滚动效果
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.classList.add('shadow-sm');
+                nav.classList.remove('border-b');
+            } else {
+                nav.classList.remove('shadow-sm');
+                nav.classList.add('border-b');
+            }
+        });
+        
+        // 返回顶部按钮
+        const backToTopBtn = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 页面加载完成后的动画
+        document.addEventListener('DOMContentLoaded', () => {
+            // 为所有带fade-in类的元素添加初始状态
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(el => {
+                el.style.opacity = '0';
+            });
+            
+            // 触发动画
+            setTimeout(() => {
+                fadeElements.forEach(el => {
+                    el.style.animationPlayState = 'running';
+                });
+            }, 100);
+        });
+        
+    </script>
+</body>
+</html>
