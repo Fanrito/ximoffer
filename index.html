@@ -75,14 +75,7 @@
             background: rgba(22, 93, 255, 0.5);
         }
         
-        /* 直播中脉冲动画 */
-        @keyframes pulseLive {
-            0%, 100% { background-color: rgba(245, 63, 63, 0.1); color: #F53F3F; }
-            50% { background-color: rgba(245, 63, 63, 0.2); color: #E02020; }
-        }
-        .tag-live {
-            animation: pulseLive 1.5s infinite;
-        }
+        
         
         /* 头像加载过渡效果 */
         .avatar-circle {
@@ -188,9 +181,19 @@
         <section id="courses" class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-light/50 rounded-3xl my-8">
             <div class="max-w-4xl mx-auto">
                 <h2 class="text-2xl md:text-3xl font-bold mb-12 text-center fade-in">课程<span class="text-primary">动态</span></h2>
+                
                 <div class="grid grid-cols-1 gap-8">
+                
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 hover:shadow-md transition-all-300 fade-in delay-100 items-center text-center border-l-4 border-upcoming">
+                        <a href="https://meeting.tencent.com/p/8360063578" target="_blank" class="inline-flex items-center justify-center text-primary hover:text-primary/80 transition-all duration-300">
+                            <i class="fa fa-video-camera mr-3"></i> <!-- 增加图标边距 -->
+                            <span class="text-lg font-semibold">直播课堂入口</span>
+                        </a>
+                        <p class="text-sm text-muted mt-3 mb-0">会议号：836-006-3578</p>
+                    </div>
+                    
                     <!-- 第3课 -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 hover:shadow-md transition-all-300 fade-in delay-100 border-l-4 border-upcoming">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 hover:shadow-md transition-all-300 fade-in delay-200">
                         <div class="flex justify-between items-start mb-6">
                             <h3 class="text-xl font-semibold text-dark">1期班 第3课</h3>
                             <span id="course2-tag" class="tag tag-ended">
@@ -424,7 +427,7 @@
                     </div>
 
                     <div class="bg-primary/5 border border-primary/20 rounded-lg p-4">
-                        <p class="text-dark font-medium mb-2">如果你愿意为学院发展添一份力，用自己的经验为学弟妹铺路，欢迎加入我们！</p>
+                        <p class="text-dark font-medium mb-2">如果你愿意为学院发展添一份力，用自己的经验为学弟妹铺路，欢迎<a href="#contact" class="text-primary hover:underline transition-all-300">加入我们</a>！</p>
                         <p class="text-muted text-sm">纯公益无报酬，但你的每一份付出都会被记录、被感谢～</p>
                     </div>
                 </div>
