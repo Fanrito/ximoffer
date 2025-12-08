@@ -3,7 +3,12 @@
 ![技术栈](https://img.shields.io/badge/技术栈-TailwindCSS%20%7C%20原生JS%20%7C%20FontAwesome-blue)
 ![版权](https://img.shields.io/badge/版权-2025%20厦信薪火项目-orange)
 
+## 🛫 官方网站
+
+[厦信薪火 - 厦信院友公益就业帮扶计划](https://ximoffer.cn/)
+
 ## 🌟 项目介绍
+
 「厦信薪火」是面向厦信学子的纯公益就业帮扶计划，源自「厦信OFFER」就业交流QQ群，旨在通过院友经验分享，缓解在校学子求职焦虑、提升就业竞争力。
 
 ### 项目背景
