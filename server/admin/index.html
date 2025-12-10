@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程管理 - 厦信薪火</title>
+    <link href="../static/tailwind/tailwind-output.css" rel="stylesheet">
+    <link href="../static/font-awesome/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        body { background: #F7F8FA; color: #1D2129; }
+        .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+        .pill { border-radius: 9999px; padding: 6px 12px; font-size: 12px; }
+        .pill-live { background: #ffecec; color: #f53f3f; }
+        .pill-ended { background: #f2f3f5; color: #86909c; }
+        .pill-upcoming { background: #e8f1ff; color: #165dff; }
+        .label { font-size: 12px; color: #86909c; }
+        .input, .select, .textarea { width: 100%; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+        .input:focus, .select:focus, .textarea:focus { outline: 2px solid rgba(22,93,255,0.2); }
+        .btn { border-radius: 12px; padding: 10px 16px; font-weight: 600; }
+        .btn-primary { background: #165DFF; color: #fff; }
+        .btn-secondary { background: #F2F3F5; color: #1D2129; }
+        .btn-danger { background: #F53F3F; color: #fff; }
+        .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    </style>
+</head>
+<body class="bg-light min-h-screen">
+    <header class="bg-white border-b border-gray-100">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-primary font-semibold text-lg tracking-tight flex items-center gap-2">
+                    <i class="fa fa-fire"></i> 厦信薪火 · 管理端
+                </span>
+                <span class="text-muted text-sm hidden md:inline">同步主页的样式和布局</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <input id="token" type="password" placeholder="X-Admin-Token" class="input w-48" />
+                <button id="save-token" class="btn btn-primary">保存</button>
+                <button id="clear-token" class="btn btn-secondary">清除</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="max-w-5xl mx-auto space-y-6">
+            <div class="card p-6">
+                <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <i class="fa fa-edit text-primary"></i> 新增/编辑课程
+                </h3>
+                <form id="course-form" class="space-y-4">
+                    <input type="hidden" name="type" value="course">
+                    <label class="label block">显示标题 / 课次
+                        <input name="lessonLabel" class="input" placeholder="如：1期班 第3课" required>
+                    </label>
+                    <div class="grid gap-3 md:grid-cols-2">
+                        <label class="label block">主题
+                            <input name="topic" class="input" placeholder="课程主题" required>
+                        </label>
+                        <label class="label block">时间文本
+                            <input name="datetimeText" class="input" placeholder="如：2025年12月06日 20:00-22:00" required>
+                        </label>
+                    </div>
+                    <div class="grid gap-3 md:grid-cols-2">
+                        <label class="label block">回放链接
+                            <input name="replayLink" class="input" placeholder="课程回放链接" required>
+                        </label>
+                        <label class="label block">状态
+                            <select name="status" class="select">
+                                <option value="ended">已结束</option>
+                                <option value="live">直播中</option>
+                                <option value="upcoming">即将开始</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="grid gap-3 md:grid-cols-3">
+                        <label class="label block">讲师名称
+                            <input name="instructor.name" class="input" placeholder="讲师名称" required>
+                        </label>
+                        <label class="label block">讲师头像URL
+                            <input name="instructor.avatar" class="input" placeholder="QQ头像URL">
+                        </label>
+                        <label class="label block">讲师QQ链接
+                            <input name="instructor.qqLink" class="input" placeholder="https://qm.qq.com/...">
+                        </label>
+                    </div>
+                    <label class="label block">讲师简介
+                        <textarea name="instructor.bio" class="textarea" rows="2" placeholder="讲师简介"></textarea>
+                    </label>
+                    <label class="label block">课程资料（格式：标题|副标题|URL）
+                        <textarea name="materials" class="textarea" rows="3" placeholder="会议文档|厦信薪火第三课|https://..."></textarea>
+                    </label>
+                    <input type="hidden" name="id">
+                    <div class="flex gap-3">
+                        <button type="submit" class="btn btn-primary">提交</button>
+                        <button type="button" id="reset-form" class="btn btn-secondary">重置</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-semibold flex items-center gap-2">
+                        <i class="fa fa-list text-primary"></i> 课程列表
+                    </h3>
+                    <span id="total-count" class="text-muted text-sm"></span>
+                </div>
+                <div id="courses-empty" class="text-muted">暂无课程</div>
+                <div id="courses-list" class="space-y-4"></div>
+            </div>
+
+            <div class="card p-6">
+                <h4 class="text-lg font-semibold mb-3">使用说明</h4>
+                <ul class="list-disc text-sm text-muted pl-5 space-y-1">
+                    <li>先填入管理 Token 并保存。</li>
+                    <li>类型固定为课程：填写课次、主题、时间文本、回放链接、讲师信息、资料。</li>
+                    <li>资料可多条，使用“标题|副标题|URL”每行一条。</li>
+                </ul>
+            </div>
+
+            <div class="card p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-lg font-semibold flex items-center gap-2"><i class="fa fa-database text-primary"></i> 直接写入 JSON</h4>
+                    <button id="apply-raw" class="btn btn-danger text-sm">覆盖写入</button>
+                </div>
+                <p class="text-sm text-muted mb-2">粘贴完整的 JSON 数组（包含课程对象），提交后将替换现有课程数据。操作前请确认并备份。</p>
+                <textarea id="raw-json" class="textarea" rows="8" placeholder='[ { "type": "course", ... } ]'></textarea>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="fixed top-4 right-4 bg-dark text-white px-4 py-3 rounded-lg shadow-lg hidden"></div>
+
+    <script>
+        const apiBase = '';
+        const tokenInput = document.getElementById('token');
+        const saveTokenBtn = document.getElementById('save-token');
+        const clearTokenBtn = document.getElementById('clear-token');
+        const form = document.getElementById('course-form');
+        const resetFormBtn = document.getElementById('reset-form');
+        const listEl = document.getElementById('courses-list');
+        const emptyEl = document.getElementById('courses-empty');
+        const toastEl = document.getElementById('toast');
+        const totalCountEl = document.getElementById('total-count');
+        const rawJsonInput = document.getElementById('raw-json');
+        const applyRawBtn = document.getElementById('apply-raw');
+        let deleteId = null;
+
+        function loadToken() {
+            const stored = sessionStorage.getItem('adminToken');
+            if (stored) tokenInput.value = stored;
+        }
+        function saveToken() {
+            sessionStorage.setItem('adminToken', tokenInput.value.trim());
+            toast('已保存 token');
+        }
+        function clearToken() {
+            sessionStorage.removeItem('adminToken');
+            tokenInput.value = '';
+            toast('已清除 token');
+        }
+        function toast(msg) {
+            toastEl.textContent = msg;
+            toastEl.classList.remove('hidden');
+            setTimeout(() => toastEl.classList.add('hidden'), 2000);
+        }
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>\"']/g, s => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[s]));
+        }
+        function parseMaterials(text) {
+            return text
+                .split('\n')
+                .map(l => l.trim())
+                .filter(Boolean)
+                .map(line => {
+                    const [title, subtitle, url] = line.split('|').map(s => s?.trim() || '');
+                    return { title, subtitle, url };
+                })
+                .filter(m => m.title || m.subtitle || m.url);
+        }
+        function toPayload(formData) {
+            const type = formData.get('type');
+            const materials = parseMaterials(formData.get('materials') || '');
+            const instructor = {};
+            const name = formData.get('instructor.name').trim();
+            if (name) instructor.name = name;
+            const avatar = formData.get('instructor.avatar').trim();
+            if (avatar) instructor.avatar = avatar;
+            const qqLink = formData.get('instructor.qqLink').trim();
+            if (qqLink) instructor.qqLink = qqLink;
+            const bio = formData.get('instructor.bio').trim();
+            if (bio) instructor.bio = bio;
+
+            const payload = {
+                type,
+                lessonLabel: formData.get('lessonLabel').trim(),
+                topic: formData.get('topic').trim(),
+                datetimeText: formData.get('datetimeText').trim(),
+                replayLink: formData.get('replayLink').trim(),
+                status: formData.get('status'),
+            };
+            if (materials.length) payload.materials = materials;
+            if (Object.keys(instructor).length) payload.instructor = instructor;
+            return payload;
+        }
+        async function request(path, options = {}) {
+            const token = tokenInput.value.trim();
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['X-Admin-Token'] = token;
+            const res = await fetch(apiBase + path, { ...options, headers });
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                const message = body.error || `HTTP ${res.status}`;
+                throw new Error(message);
+            }
+            return res.json();
+        }
+        function renderCourseCard(item) {
+            const card = document.createElement('div');
+            card.className = 'p-4 rounded-xl border border-gray-100 bg-white shadow-sm';
+
+            if (item.type === 'live') {
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-video-camera text-primary"></i>
+                            <span class="font-semibold text-dark">${escapeHtml(item.title || '直播入口')}</span>
+                        </div>
+                        <span class="pill pill-live">直播入口</span>
+                    </div>
+                    <p class="text-sm text-muted mb-1">链接：${escapeHtml(item.link || '')}</p>
+                    ${item.meetingNumber ? `<p class="text-sm text-muted mb-2">会议号：${escapeHtml(item.meetingNumber)}</p>` : ''}
+                    <div class="flex gap-2">
+                        <button class="btn btn-secondary text-sm" data-edit="${item.id}">编辑</button>
+                        <button class="btn btn-danger text-sm" data-delete="${item.id}">删除</button>
+                    </div>
+                `;
+            } else {
+                const materials = (item.materials || []).map(m => `
+                    <a class="text-primary text-sm flex items-center gap-2" href="${escapeHtml(m.url || '#')}" target="_blank">
+                        <i class="fa fa-file-word-o text-primary"></i>
+                        <div>
+                            <p class="text-dark font-medium text-sm">${escapeHtml(m.title || '')}</p>
+                            ${m.subtitle ? `<p class="text-muted text-xs">${escapeHtml(m.subtitle)}</p>` : ''}
+                        </div>
+                    </a>
+                `).join('');
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-2">
+                        <div>
+                            <p class="text-sm text-muted">${escapeHtml(item.lessonLabel || '')}</p>
+                            <h4 class="text-lg font-semibold text-dark">${escapeHtml(item.topic || '')}</h4>
+                        </div>
+                        <span class="pill pill-${item.status || 'ended'}">${item.status === 'live' ? '直播中' : item.status === 'upcoming' ? '即将开始' : '已结束'}</span>
+                    </div>
+                    <p class="text-muted text-sm mb-2">${escapeHtml(item.datetimeText || '')}</p>
+                    <div class="text-sm text-muted mb-3">回放：<a class="text-primary" href="${escapeHtml(item.replayLink || '#')}" target="_blank">${escapeHtml(item.replayLink || '')}</a></div>
+                    <div class="mb-3 space-y-2">${materials}</div>
+                    <div class="flex items-center mb-3">
+                        ${item.instructor?.avatar ? `<img src="${escapeHtml(item.instructor.avatar)}" class="avatar-circle mr-3" alt="${escapeHtml(item.instructor.name || '')}" loading="lazy">` : ''}
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-dark">${escapeHtml(item.instructor?.name || '')}</span>
+                                ${item.instructor?.qqLink ? `<a class="text-primary text-sm" href="${escapeHtml(item.instructor.qqLink)}" target="_blank"><i class="fa fa-qq mr-1"></i>添加好友</a>` : ''}
+                            </div>
+                            <p class="text-sm text-muted">${escapeHtml(item.instructor?.bio || '')}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-secondary text-sm" data-edit="${item.id}">编辑</button>
+                        <button class="btn btn-danger text-sm" data-delete="${item.id}">删除</button>
+                    </div>
+                `;
+            }
+            return card;
+        }
+        async function loadCourses() {
+            const { data } = await request('/api/courses');
+            const courses = (data || []).filter(item => item.type !== 'live');
+            listEl.innerHTML = '';
+            totalCountEl.textContent = `共 ${courses.length} 条`;
+            if (!courses.length) {
+                emptyEl.classList.remove('hidden');
+                return;
+            }
+            emptyEl.classList.add('hidden');
+            // 新增的（updatedAt 较新）排在前
+            courses.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+            courses.forEach(item => listEl.appendChild(renderCourseCard(item)));
+        }
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = form.elements['id'].value;
+            try {
+                const payload = toPayload(new FormData(form));
+                if (id) {
+                    await request(`/api/courses/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+                    toast('更新成功');
+                } else {
+                    await request('/api/courses', { method: 'POST', body: JSON.stringify(payload) });
+                    toast('新增成功');
+                }
+                form.reset();
+                await loadCourses();
+            } catch (err) {
+                toast(err.message);
+            }
+        });
+        resetFormBtn.addEventListener('click', () => {
+            form.reset();
+            form.elements['id'].value = '';
+        });
+        listEl.addEventListener('click', (e) => {
+            const editId = e.target.getAttribute('data-edit');
+            const delId = e.target.getAttribute('data-delete');
+            if (editId) {
+                const card = e.target.closest('.p-4');
+                fetch(`/api/courses`).then(r => r.json()).then(({ data }) => {
+                    const target = data.find(x => x.id === editId);
+                    if (!target) return;
+                    form.elements['type'].value = 'course';
+                    form.elements['lessonLabel'].value = target.lessonLabel || '';
+                    form.elements['topic'].value = target.topic || '';
+                    form.elements['datetimeText'].value = target.datetimeText || '';
+                    form.elements['replayLink'].value = target.replayLink || '';
+                    form.elements['link'].value = target.link || '';
+                    form.elements['meetingNumber'].value = target.meetingNumber || '';
+                    form.elements['status'].value = target.status || 'ended';
+                    form.elements['instructor.name'].value = target.instructor?.name || '';
+                    form.elements['instructor.avatar'].value = target.instructor?.avatar || '';
+                    form.elements['instructor.qqLink'].value = target.instructor?.qqLink || '';
+                    form.elements['instructor.bio'].value = target.instructor?.bio || '';
+                    form.elements['materials'].value = (target.materials || []).map(m => `${m.title || ''}|${m.subtitle || ''}|${m.url || ''}`).join('\\n');
+                    form.elements['id'].value = editId;
+                    toast('已填充表单，可修改后提交');
+                });
+            }
+            if (delId) {
+                if (confirm('确认删除此条目？')) {
+                    request(`/api/courses/${delId}`, { method: 'DELETE' })
+                        .then(() => { toast('删除成功'); loadCourses(); })
+                        .catch(err => toast(err.message));
+                }
+            }
+        });
+        applyRawBtn.addEventListener('click', () => {
+            const text = rawJsonInput.value.trim();
+            if (!text) {
+                return toast('请输入 JSON');
+            }
+            if (!confirm('确认用该 JSON 覆盖现有课程数据？此操作不可撤销。')) return;
+            try {
+                JSON.parse(text);
+            } catch (e) {
+                return toast('JSON 解析失败，请检查格式');
+            }
+            request('/api/courses/raw', { method: 'POST', body: text })
+                .then(() => { toast('写入成功'); loadCourses(); })
+                .catch(err => toast(err.message));
+        });
+        saveTokenBtn.addEventListener('click', saveToken);
+        clearTokenBtn.addEventListener('click', clearToken);
+        loadToken();
+        loadCourses().catch(err => toast(err.message));
+    </script>
+</body>
+</html>

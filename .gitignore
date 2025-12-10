@@ -1,0 +1,8 @@
+node_modules
+server/node_modules
+server/.env
+server/.env.local
+server/data/
+server/backups/
+server/logs/
+npm-debug.log*
